@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import application.Main;
+import core.SplittedTableString;
 import core.StaticMethods;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -30,6 +32,8 @@ import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
 
 import model.*;
+import request.TableNumberModel;
+import response.ResponseModel;
 import service.TableService;
 import service.ZoneService;
 
@@ -273,11 +277,14 @@ public class TablesController implements Initializable {
 							if (!displayTables.get(nodeIndex).isOccupied()) {
 								if (StaticMethods.confirmDialog("Do you want to open a bill at table "
 										+ displayTables.get(nodeIndex).toString() + "?")) {
-									displayTables.get(nodeIndex).setOccupied(true);
-									MainController.getInstance().openPOSWithTableNumber(displayTables.get(nodeIndex).toString());
+									SplittedTableString tableString = StaticMethods.splitTableString(displayTables.get(nodeIndex).toString());
+									ResponseModel openTable = TableService.getInstance().openTable(new TableNumberModel(tableString.zoneLetter, tableString.tableNumber));
+									if (openTable.isSuccess()) {
+										Main.getMainController().openPOSWithTableNumber(displayTables.get(nodeIndex).toString());
+									}
 								}
 							} else {
-								MainController.getInstance().openPOSWithTableNumber(displayTables.get(nodeIndex).toString());
+								Main.getMainController().openPOSWithTableNumber(displayTables.get(nodeIndex).toString());
 							}
 						}
 					});

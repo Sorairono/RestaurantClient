@@ -52,7 +52,7 @@ import service.*;
 
 public class POSController implements Initializable {
 	private static POSController instance;
-	
+
 	public static POSController getInstance() {
 		if (instance == null) {
 			synchronized (POSController.class) {
@@ -63,7 +63,7 @@ public class POSController implements Initializable {
 		}
 		return instance;
 	}
-	
+
 	@FXML
 	private Label tableMessage;
 	@FXML
@@ -152,13 +152,16 @@ public class POSController implements Initializable {
 						ResponseModel openTable = TableService.getInstance().openTable(tableNumberModel);
 						if (openTable.isSuccess()) {
 							tableNumber.setText(newTable.toString());
+							StaticMethods.setMessage("Opened Table " + newTable.toString(), message);
 						}
 					}
 				} else {
 					tableNumber.setText(newTable.getMergeTable());
+					StaticMethods.setMessage("Changed to merge Table " + newTable.getMergeTable(), message);
 				}
 			} else {
 				tableNumber.setText(newTable.toString());
+				StaticMethods.setMessage("Changed to Table " + newTable.toString(), message);
 			}
 		}
 	}
@@ -191,30 +194,39 @@ public class POSController implements Initializable {
 
 	@FXML
 	private void handleSend() {
-//		if (currentTable != null) {
-//			if (tableProductList.size() > 0) {
-//				for (int i = 0; i < tableProductList.size(); i++) {
-//					if (!tableProductList.get(i).isOrderSent()) {
-//						ObservableList<CartProductModel> copyOrder = FXCollections
-//								.observableArrayList(tableProductList);
-//						for (int j = 0; j < copyOrder.size(); j++) {
-//							if (!copyOrder.get(j).isOrderSent()) {
-//								copyOrder.get(j).setOrderSent(true);
-//								main.getWaitList().add(copyOrder.get(j));
-//							}
-//						}
-//						tableProductList.setAll(copyOrder);
-//						main.setMessage("Order sent to the kitchen", message);
-//						return;
-//					}
-//				}
-//				main.setMessage("You didn't choose any product", message);
-//			} else {
-//				main.setMessage("Your cart is empty at the moment", message);
-//			}
-//		} else {
-//			main.setMessage("Please choose a table first", message);
-//		}
+		if (tableString != null) {
+			if (cartView.getItems().size() > 0) {
+				for (int i = 0; i < cartView.getItems().size(); i++) {
+					if (!cartView.getItems().get(i).isOrderSent()) {
+						ResponseModel sendOrder = TableService.getInstance().sendOrder(new SendOrderTableModel(
+								tableString.zoneLetter, tableString.tableNumber, i, cartView.getItems().size() - 1));
+						if (!sendOrder.isSuccess() || sendOrder == null) {
+							return;
+						}
+						List<KitchenProductModel> model = new ArrayList<KitchenProductModel>();
+						for (int j = i; j < cartView.getItems().size(); j++) {
+							KitchenProductModel newKitchenProduct = new KitchenProductModel(
+									cartView.getItems().get(j).getProductName(), "", "",
+									cartView.getItems().get(j).getAmount(), tableString.zoneLetter,
+									tableString.tableNumber);
+							model.add(newKitchenProduct);
+						}
+						ResponseModel sendOrderToKitchen = KitchenService.getInstance().sendOrderToKitchen(model);
+						if (sendOrderToKitchen.isSuccess()) {
+							refreshView();
+							MainController.getKitchenController().loadData();
+							StaticMethods.setMessage("Order sent to the kitchen", message);
+						}
+						return;
+					}
+				}
+				StaticMethods.setMessage("You didn't choose any product", message);
+			} else {
+				StaticMethods.setMessage("Your cart is empty at the moment", message);
+			}
+		} else {
+			StaticMethods.setMessage("Please choose a table first", message);
+		}
 	}
 
 	@FXML
@@ -303,11 +315,11 @@ public class POSController implements Initializable {
 	}
 
 	private void setPriceLabel(TableModel table) {
-		subTotalLabel.setText(String.valueOf(table.getSubTotal()));
-		taxLabel.setText(String.valueOf(table.getTax()));
-		totalLabel.setText(String.valueOf(table.getTotal()));
-		discountLabel.setText(String.valueOf(table.getDiscount()));
-		balanceLabel.setText(String.valueOf(table.getBalance()));
+		subTotalLabel.setText(String.format("%.2f", table.getSubTotal()));
+		taxLabel.setText(String.format("%.2f", table.getTax()));
+		totalLabel.setText(String.format("%.2f", table.getTotal()));
+		discountLabel.setText(String.format("%.2f", table.getDiscount()));
+		balanceLabel.setText(String.format("%.2f", table.getBalance()));
 	}
 
 	private void setCartDisplay(TableModel table) {
@@ -339,10 +351,7 @@ public class POSController implements Initializable {
 		if (!addToCart.isSuccess() || addToCart == null) {
 			return;
 		}
-		TableModel table = TableService.getInstance()
-				.getTable(new TableNumberModel(tableString.zoneLetter, tableString.tableNumber));
-		setCartDisplay(table);
-		setPriceLabel(table);
+		refreshView();
 	}
 
 	private void changeAmount(CartProductModel cartProduct, int productIndex, int newAmount) {
@@ -352,22 +361,16 @@ public class POSController implements Initializable {
 		if (!changeAmount.isSuccess() || changeAmount == null) {
 			return;
 		}
-		TableModel table = TableService.getInstance()
-				.getTable(new TableNumberModel(tableString.zoneLetter, tableString.tableNumber));
-		setCartDisplay(table);
-		setPriceLabel(table);
+		refreshView();
 	}
 
-	private void deleteProduct(int productIndex) {
+	private void deleteProduct(String productName) {
 		ResponseModel deleteProduct = TableService.getInstance().deleteProductFromCart(
-				new DeleteProductFromCart(tableString.zoneLetter, tableString.tableNumber, productIndex));
+				new DeleteProductFromCart(tableString.zoneLetter, tableString.tableNumber, productName));
 		if (!deleteProduct.isSuccess() || deleteProduct == null) {
 			return;
 		}
-		TableModel table = TableService.getInstance()
-				.getTable(new TableNumberModel(tableString.zoneLetter, tableString.tableNumber));
-		setCartDisplay(table);
-		setPriceLabel(table);
+		refreshView();
 	}
 
 	private void setZoneLetterBox() {
@@ -378,11 +381,10 @@ public class POSController implements Initializable {
 		zoneLetterBox.setItems(zoneListRepresentatives);
 	}
 
-	private void getTable(TableModel table) {
+	private void setTable() {
 		gridPane2.getChildren().clear();
 		gridPane3.getChildren().clear();
-		setCartDisplay(table);
-		setPriceLabel(table);
+		refreshView();
 		for (int i = 0; i <= categoriesList.size() / columnCount.get(); i++) {
 			for (int j = 0; j < columnCount.get(); j++) {
 				int categoryIndex = i * columnCount.get() + j;
@@ -418,9 +420,6 @@ public class POSController implements Initializable {
 											@Override
 											public void handle(MouseEvent event) {
 												gridPane3.getChildren().clear();
-												System.out.println(categoriesList.get(categoryIndex).toString());
-												System.out.println(
-														categoriesList.get(categoryIndex).getTypes().get(typeIndex));
 												displayMenu = ProductService.getInstance()
 														.getProductsListByType(new FindProductByType(
 																categoriesList.get(categoryIndex).toString(),
@@ -493,8 +492,7 @@ public class POSController implements Initializable {
 				changeTableBox.setVisible(false);
 				tableMessage.setVisible(false);
 				tableString = StaticMethods.splitTableString(newValue);
-				getTable(TableService.getInstance()
-						.getTable(new TableNumberModel(tableString.zoneLetter, tableString.tableNumber)));
+				setTable();
 			}
 		});
 		cartPane.prefWidthProperty().bind((mainPane.widthProperty().subtract(50)).divide(2));
@@ -543,9 +541,10 @@ public class POSController implements Initializable {
 				StackPane button2 = new StackPane(new Circle(15, Paint.valueOf("cyan")), new Label("+"));
 				button1.setOnMouseClicked(e -> {
 					if (cartProduct.getAmount() == 1) {
-						deleteProduct(cartView.getSelectionModel().getSelectedIndex());
+						deleteProduct(cartView.getSelectionModel().getSelectedItem().getProductName());
 					} else {
-						changeAmount(cartProduct, cartView.getSelectionModel().getSelectedIndex(), cartProduct.getAmount() - 1);
+						changeAmount(cartProduct, cartView.getSelectionModel().getSelectedIndex(),
+								cartProduct.getAmount() - 1);
 					}
 				});
 				button2.setOnMouseClicked(e -> {
@@ -660,5 +659,12 @@ public class POSController implements Initializable {
 
 	public void setTableNumber(String tableNumber) {
 		this.tableNumber.setText(tableNumber);
+	}
+
+	public void refreshView() {
+		TableModel table = TableService.getInstance()
+				.getTable(new TableNumberModel(tableString.zoneLetter, tableString.tableNumber));
+		setCartDisplay(table);
+		setPriceLabel(table);
 	}
 }

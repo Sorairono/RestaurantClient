@@ -5,20 +5,22 @@ public class KitchenProductModel {
 	private String timeOrdered;
 	private String timeCompleted;
 	private int amount;
-	private String tableString;
+	private String zoneLetter;
+	private int tableNumber;
 
 	public KitchenProductModel() {
 
 	}
 
 	public KitchenProductModel(String productName, String timeOrdered, String timeCompleted, int amount,
-			String tableString) {
+			String zoneLetter, int tableNumber) {
 		super();
 		this.productName = productName;
 		this.timeOrdered = timeOrdered;
 		this.timeCompleted = timeCompleted;
 		this.amount = amount;
-		this.tableString = tableString;
+		this.zoneLetter = zoneLetter;
+		this.tableNumber = tableNumber;
 	}
 
 	public String getProductName() {
@@ -53,12 +55,20 @@ public class KitchenProductModel {
 		this.amount = amount;
 	}
 
-	public String getTableString() {
-		return tableString;
+	public String getZoneLetter() {
+		return zoneLetter;
 	}
 
-	public void setTableString(String tableString) {
-		this.tableString = tableString;
+	public void setZoneLetter(String zoneLetter) {
+		this.zoneLetter = zoneLetter;
+	}
+
+	public int getTableNumber() {
+		return tableNumber;
+	}
+
+	public void setTableNumber(int tableNumber) {
+		this.tableNumber = tableNumber;
 	}
 
 }

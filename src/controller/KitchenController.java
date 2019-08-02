@@ -67,12 +67,12 @@ public class KitchenController implements Initializable {
 		timeList.prefWidthProperty().bind(tableView.widthProperty().multiply(0.2));
 		timeList.setCellValueFactory(new PropertyValueFactory<KitchenProductModel, String>("timeOrdered"));
 		tableView.getColumns().addAll(productNameList, quantityList, timeList);
-//		loadData();
+		loadData();
 	}
 	
-//	public void loadData() {
-//		ObservableList<KitchenProductModel> kitchenList = FXCollections.observableArrayList(KitchenService.getInstance().getKitchenList());
-//		tableView.setItems(kitchenList);
-//	}
+	public void loadData() {
+		ObservableList<KitchenProductModel> kitchenList = FXCollections.observableArrayList(KitchenService.getInstance().getKitchenList());
+		tableView.setItems(kitchenList);
+	}
 	
 }

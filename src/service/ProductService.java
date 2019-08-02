@@ -54,9 +54,7 @@ public class ProductService {
 				in.close();
 				TypeToken<List<ProductModel>> token = new TypeToken<List<ProductModel>>() {
 				};
-				System.out.println(response.toString());
 				productsListByType = gson.fromJson(response.toString(), token.getType());
-				System.out.println(productsListByType.size());
 			}
 		} catch (Exception e) {
 			// TODO: handle exception

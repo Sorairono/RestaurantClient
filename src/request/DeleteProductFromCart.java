@@ -3,17 +3,17 @@ package request;
 public class DeleteProductFromCart {
 	private String zoneLetter;
 	private int tableNumber;
-	private int productIndex;
+	private String productName;
 
 	public DeleteProductFromCart() {
 
 	}
 
-	public DeleteProductFromCart(String zoneLetter, int tableNumber, int productIndex) {
+	public DeleteProductFromCart(String zoneLetter, int tableNumber, String productName) {
 		super();
 		this.zoneLetter = zoneLetter;
 		this.tableNumber = tableNumber;
-		this.productIndex = productIndex;
+		this.productName = productName;
 	}
 
 	public String getZoneLetter() {
@@ -32,12 +32,12 @@ public class DeleteProductFromCart {
 		this.tableNumber = tableNumber;
 	}
 
-	public int getProductIndex() {
-		return productIndex;
+	public String getProductName() {
+		return productName;
 	}
 
-	public void setProductIndex(int productIndex) {
-		this.productIndex = productIndex;
+	public void setProductName(String productName) {
+		this.productName = productName;
 	}
 
 }

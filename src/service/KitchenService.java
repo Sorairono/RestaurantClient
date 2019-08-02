@@ -66,8 +66,8 @@ public class KitchenService {
 	}
 	
 	public List<KitchenProductModel> getKitchenList() {
+		List<KitchenProductModel> kitchenList = new ArrayList<KitchenProductModel>();
 		try {
-			List<KitchenProductModel> kitchenList = new ArrayList<KitchenProductModel>();
 			URL url = new URL(ConstantURL.url_getKitchenList);
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setDoOutput(true);
@@ -85,11 +85,10 @@ public class KitchenService {
 				in.close();
 				TypeToken <List<KitchenProductModel>> token = new TypeToken<List<KitchenProductModel>>() {};
 				kitchenList = gson.fromJson(response.toString(), token.getType());
-				return kitchenList;
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
-		return null;
+		return kitchenList;
 	}
 }
