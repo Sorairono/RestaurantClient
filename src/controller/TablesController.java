@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import application.Main;
 import core.SplittedTableString;
 import core.StaticMethods;
 import javafx.beans.property.IntegerProperty;
@@ -36,6 +35,7 @@ import request.TableNumberModel;
 import response.ResponseModel;
 import service.TableService;
 import service.ZoneService;
+import singleton.Singleton_Controller;
 
 public class TablesController implements Initializable {
 	@FXML
@@ -280,11 +280,11 @@ public class TablesController implements Initializable {
 									SplittedTableString tableString = StaticMethods.splitTableString(displayTables.get(nodeIndex).toString());
 									ResponseModel openTable = TableService.getInstance().openTable(new TableNumberModel(tableString.zoneLetter, tableString.tableNumber));
 									if (openTable.isSuccess()) {
-										Main.getMainController().openPOSWithTableNumber(displayTables.get(nodeIndex).toString());
+										Singleton_Controller.getInstance().getMain_Controller().openPOSWithTableNumber(displayTables.get(nodeIndex).toString());
 									}
 								}
 							} else {
-								Main.getMainController().openPOSWithTableNumber(displayTables.get(nodeIndex).toString());
+								Singleton_Controller.getInstance().getMain_Controller().openPOSWithTableNumber(displayTables.get(nodeIndex).toString());
 							}
 						}
 					});
